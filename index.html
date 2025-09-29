@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <title>Unidad en los RRCC — Puzzle visual</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="theme-color" content="#0e0f12" />
+
+  <link rel="preconnect" href="https://cdn.tailwindcss.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <script defer src="https://cdn.tailwindcss.com"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Patrick+Hand&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+
+  <link rel="preload" as="image" href="./pr-sello.avif" type="image/avif" imagesrcset="./pr-sello.avif 1x">
+  <link rel="preload" as="image" href="./pr-sello.webp" type="image/webp" imagesrcset="./pr-sello.webp 1x">
+  <link rel="preload" as="image" href="./pr-sello.png" type="image/png" imagesrcset="./pr-sello.png 1x">
+
+  <style>
+    :root{
+      --c-dinastica:#7EC8E3;
+      --c-territorial:#E0B437;
+      --c-religiosa:#7FD6C2;
+      --c-linguistica:#E5873A;
+      --c-politica:#8C6AD2;
+      --c-center:#9AA6B2;
+
+      --l-dinastica:#E8F6FB;
+      --l-territorial:#FBF3D9;
+      --l-religiosa:#E9FBF6;
+      --l-linguistica:#FCEFE6;
+      --l-politica:#EFEAFB;
+    }
+
+    html, body { min-height: 100dvh; height: 100%; }
+    body{
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,ui-sans-serif,"Patrick Hand",sans-serif;
+      font-size: 16px;
+      text-size-adjust: 100%;
+      -webkit-text-size-adjust: 100%;
+    }
+
+    #deck,
+    .deck-sidebar{
+      -webkit-overflow-scrolling: touch;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+    }
+
+    .card{ user-select:none; cursor:grab; }
+    .card:active{ cursor:grabbing; }
+
+    .dropzone.drag-over{ outline:3px dashed rgba(0,0,0,.25); }
+    .slot{
+      min-height:3.25rem;
+      border:2px dashed #CBD5E1;
+      border-radius:.8rem;
+      background:white;
+      display:flex; align-items:center;
+      padding:.5rem .6rem;
+    }
+    .slot.filled{ border-style:solid; border-color:#A3E635; }
+
+    .hint-bubble{
+      position:absolute; z-index:50; background:#111827; color:white;
+      font-size:.95rem; padding:.5rem .65rem; border-radius:.5rem;
+      max-width:18rem; box-shadow:0 10px 30px rgba(0,0,0,.25);
+      will-change: transform, opacity;
+      transition: transform .2s ease, opacity .2s ease;
+    }
+
+    #deck{ display:flex; gap:.75rem; flex-wrap:wrap; overflow:auto; scroll-snap-type:x mandatory; }
+    #deck .card{ scroll-snap-align:start }
+
+    .layout-grid{ display:grid; gap:1rem; grid-template-columns: 1fr; }
+    .deck-dock{
+      position:sticky; bottom:.5rem; z-index:30; background:white; border-radius:1rem;
+      border:1px solid #e5e7eb; padding:.75rem; box-shadow:0 8px 28px rgba(0,0,0,.15);
+    }
+    @media (min-width:768px){
+      .layout-grid{ grid-template-columns: minmax(0,1fr) 320px; align-items:start; }
+      .deck-sidebar{
+        position:sticky; top:5.5rem; max-height:calc(100dvh - 6.5rem);
+        overflow:auto; border:1px solid #e5e7eb; border-radius:1rem; background:white;
+        box-shadow:0 8px 28px rgba(0,0,0,.08); padding:.75rem;
+      }
+    }
+
+    .brand{
+      width:42px; height:42px; border-radius:9999px; overflow:hidden;
+      background:#0f172a; display:grid; place-items:center;
+    }
+    .brand img{ width:100%; height:100%; object-fit:cover }
+
+    .watermark{
+      position:fixed; right:1.2rem; bottom:1.2rem; z-index:0;
+      opacity:.06; width:140px; height:140px; pointer-events:none;
+      filter:grayscale(10%);
+    }
+
+    .bg-green-100, .bg-red-100{ transition: opacity .18s ease; }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+  <picture>
+    <source srcset="./pr-sello.avif" type="image/avif">
+    <source srcset="./pr-sello.webp" type="image/webp">
+    <img class="watermark rounded-full" src="./pr-sello.png" alt="Sello PR Educación" width="140" height="140" decoding="async" loading="lazy" fetchpriority="low">
+  </picture>
+
+  <header class="w-full border-b bg-white/90 sticky top-0 z-40 backdrop-blur supports-[backdrop-filter]:backdrop-blur-md">
+    <div class="mx-auto max-w-7xl px-4 py-3 flex flex-wrap items-center gap-3 justify-between">
+      <div class="flex items-center gap-3">
+        <div class="brand border border-white/60 shadow-sm">
+          <picture>
+            <source srcset="./pr-sello.avif" type="image/avif">
+            <source srcset="./pr-sello.webp" type="image/webp">
+            <img src="./pr-sello.png" alt="PR Educación" width="42" height="42" decoding="async" loading="eager" fetchpriority="high">
+          </picture>
+        </div>
+        <div class="relative z-10">
+          <h1 class="text-2xl leading-6">Unidad en los RRCC — Puzzle visual</h1>
+          <p class="text-sm text-slate-500 -mt-1">Baraja siempre visible (sidebar/dock). iPad listo.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="basicBtn" class="px-4 py-3 min-h-[44px] rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-sm">Nivel Básico</button>
+        <button id="proBtn" class="px-4 py-3 min-h-[44px] rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-sm">Nivel Pro</button>
+        <div class="mx-2 h-6 w-px bg-slate-300 hidden sm:block"></div>
+        <button id="hintBtn" class="px-4 py-3 min-h-[44px] rounded-xl bg-amber-200 hover:bg-amber-300 text-amber-950 text-sm">Pide un comodín</button>
+        <button id="resetBtn" class="px-4 py-3 min-h-[44px] rounded-xl bg-slate-800 hover:bg-black text-white text-sm">Reiniciar</button>
+        <div class="mx-2 h-6 w-px bg-slate-300 hidden sm:block"></div>
+        <div class="text-right">
+          <div class="text-xs text-slate-500">Cronómetro</div>
+          <div id="timer" class="font-semibold text-lg tabular-nums">00:00</div>
+          <div id="best" class="text-[11px] text-slate-500"></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid place-items-center mt-4">
+    <div class="rounded-2xl px-4 py-3 text-center text-white shadow-inner" style="background:var(--c-center)">
+      <div class="text-xs">Nodo central</div>
+      <div class="text-lg font-semibold">UNIDAD EN LOS RRCC</div>
+    </div>
+  </div>
+
+  <main class="max-w-7xl mx-auto px-4 py-6">
+    <div id="layout" class="layout-grid">
+      <section id="boardContainer" class="relative z-10">
+        <div id="basicBoard" class="hidden bg-white rounded-2xl shadow-sm border p-4">
+          <div id="basicCols" class="grid md:grid-cols-5 gap-4"></div>
+          <p class="mt-3 text-sm text-slate-500 text-center">Coloca aquí los epígrafes e <b>ítems coloreados</b>. Los huecos sirven de guía.</p>
+        </div>
+
+        <div id="proBoard" class="hidden bg-white rounded-2xl shadow-sm border p-4">
+          <div id="proCols" class="grid md:grid-cols-5 gap-4"></div>
+          <p class="mt-3 text-sm text-slate-500 text-center">En cada unidad hay <b>huecos</b> del color de su unidad.</p>
+        </div>
+      </section>
+
+      <aside id="deckSection" class="deck-sidebar md:block">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-lg">Tarjetas</h2>
+          <span id="leftCount" class="text-sm text-slate-500"></span>
+        </div>
+        <div id="deck" class="bg-white rounded-xl border p-2 min-h-[9rem]"></div>
+      </aside>
+    </div>
+  </main>
+
+  <section class="max-w-7xl mx-auto px-4 pb-8">
+    <details class="bg-white rounded-2xl p-4 shadow-sm border">
+      <summary class="cursor-pointer text-base">Cómo ejecutar y jugar</summary>
+      <ol class="list-decimal pl-6 mt-2 text-[16px] leading-6">
+        <li>Guarda este archivo como <b>index.html</b> y súbelo a la raíz del repositorio. <b>Ábrelo con doble clic</b> o en GitHub Pages.</li>
+        <li>Coloca la imagen del sello en la misma carpeta con el nombre <b>pr-sello.png</b> (opcionalmente <b>pr-sello.webp</b>/<b>.avif</b>).</li>
+        <li>Elige <b>Nivel Básico</b> (tarjetas ya coloreadas y <b>huecos guía</b>) o <b>Nivel Pro</b> (tarjetas sin color hasta acertar y huecos obligatorios).</li>
+        <li>Arrastra cada tarjeta a su unidad. Si aciertas (Pro) se tiñe con un <b>tono claro</b> del color de la unidad.</li>
+        <li><b>Pide un comodín</b>: pulsa y luego toca una tarjeta para ver su explicación.</li>
+        <li><b>Reiniciar</b> baraja el modo activo. Tu <b>mejor marca</b> se guarda en este navegador.</li>
+      </ol>
+    </details>
+  </section>
+
+  <dialog id="winDlg" class="rounded-2xl p-0 backdrop:bg-black/40">
+    <div class="p-5 bg-white rounded-2xl w-[min(92vw,28rem)]">
+      <h3 class="text-xl mb-2">¡Esquema completado! 🎉</h3>
+      <p id="resultTxt" class="text-slate-700"></p>
+      <div class="flex justify-end gap-2 mt-4">
+        <button id="againBtn" class="px-4 py-3 min-h-[44px] rounded-xl bg-slate-800 hover:bg-black text-white">Volver a jugar</button>
+        <button id="closeBtn" class="px-4 py-3 min-h-[44px] rounded-xl border">Cerrar</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script defer>
+  const COLORS = {
+    'Dinástica':'var(--c-dinastica)',
+    'Territorial':'var(--c-territorial)',
+    'Religiosa':'var(--c-religiosa)',
+    'Lingüística':'var(--c-linguistica)',
+    'Política':'var(--c-politica)'
+  };
+  const LIGHTS = {
+    'Dinástica':'var(--l-dinastica)',
+    'Territorial':'var(--l-territorial)',
+    'Religiosa':'var(--l-religiosa)',
+    'Lingüística':'var(--l-linguistica)',
+    'Política':'var(--l-politica)'
+  };
+
+  const BASIC_COLORED = [
+    {id:'b-cat-din', text:'DINÁSTICA', cat:'Dinástica', hint:'Unión dinástica de Isabel I de Castilla y Fernando II de Aragón en 1469. No fusionó instituciones: cada reino mantuvo sus leyes y administración (unión dinástica).'},
+    {id:'b-cat-ter', text:'TERRITORIAL', cat:'Territorial', hint:'Expansión e integración territorial: Granada, control de Canarias, y acuerdos diplomáticos como Alcaçovas.'},
+    {id:'b-cat-pol', text:'POLÍTICA', cat:'Política', hint:'Refuerzo del poder real con instituciones como Consejo Real, Chancillerías y Santa Hermandad.'},
+    {id:'b-cat-rel', text:'RELIGIOSA', cat:'Religiosa', hint:'Instrumentos de control y reforma religiosa: Inquisición, expulsiones, patronato regio y regalismo.'},
+    {id:'b-cat-lin', text:'LINGÜÍSTICA', cat:'Lingüística', hint:'Primera gramática del castellano (Nebrija, 1492): fija reglas y sirve para cohesionar el reino.'},
+
+    {id:'b-d1', text:'Matrimonio (1469) de ambos Trastámara', cat:'Dinástica', hint:'Isabel y Fernando unieron sus coronas por matrimonio; cada reino conservó fueros y órganos propios (unión dinástica, no estatal).'},
+    {id:'b-d2', text:'Cada reino conserva administración, leyes y política', cat:'Dinástica', hint:'La monarquía resultante fue compuesta: no hubo fusión institucional completa.'},
+
+    {id:'b-t1', text:'Conquista de Granada (1482–1492)', cat:'Territorial', hint:'La guerra de Granada integró el último reino nazarí en Castilla y se considera el cierre de la Reconquista.'},
+    {id:'b-t2', text:'1479 Tratado de Alcaçovas', cat:'Territorial', hint:'Puso fin a la guerra de Sucesión; Portugal reconoció a Isabel. Reparto de esferas atlánticas.'},
+    {id:'b-t3', text:'Maestrazgos → Realengo', cat:'Territorial', hint:'Las Órdenes Militares (Santiago, Alcántara, Calatrava) pasaron a control directo de la Corona (realengo).'},
+    {id:'b-t4', text:'Canarias (Béthencourt; baja resistencia guanche)', cat:'Territorial', hint:'Proceso de conquista y colonización atlántica; base para la expansión hacia América.'},
+
+    {id:'b-r1', text:'1482 Inquisición (órgano de control social)', cat:'Religiosa', hint:'Tribunal eclesiástico bajo tutela real para vigilar ortodoxia y cohesión. Creada por bula papal, aplicada por la Corona.'},
+    {id:'b-r2', text:'1492 Expulsión de judíos', cat:'Religiosa', hint:'Edicto de Granada: obligó a elegir entre conversión o salida de los reinos.'},
+    {id:'b-r3', text:'1500 Expulsión/Conversión de musulmanes (moriscos)', cat:'Religiosa', hint:'Proceso de conversiones forzadas y posterior control de los moriscos; impulsos reformistas de Cisneros.'},
+    {id:'b-r4', text:'Patronato regio', cat:'Religiosa', hint:'Privilegios concedidos por el papado a los reyes para intervenir en asuntos eclesiásticos (derecho de presentación y gestión de beneficios).'},
+    {id:'b-r5', text:'Reforma de la Iglesia (conventos, formación del clero)', cat:'Religiosa', hint:'Programa de reforma disciplinaria y educativa del clero impulsado desde la Corona.'},
+    {id:'b-r6', text:'Regalismo', cat:'Religiosa', hint:'Política que refuerza la superioridad del poder real frente a Roma en asuntos de la Iglesia.'},
+
+    {id:'b-l1', text:'1ª gramática del castellano (1492): Nebrija', cat:'Lingüística', hint:'Primera gramática impresa de una lengua romance; “compañera del imperio”: herramienta de unificación y administración.'}
+  ];
+
+  const PRO_ITEMS = [
+    {id:'p-d1',text:'Matrimonio (1469) de ambos Trastámara', cat:'Dinástica', hint:'Isabel de Castilla y Fernando de Aragón unieron dinastías, no instituciones (cada reino conservó sus leyes).'},
+    {id:'p-d2',text:'Cada reino conserva: administración, leyes y política', cat:'Dinástica', hint:'Monarquía compuesta: coordinación real sobre reinos jurídicamente distintos.'},
+
+    {id:'p-t1',text:'Conquista de Granada (1482–1492)', cat:'Territorial', hint:'Integración del reino nazarí en Castilla y fin de la Reconquista.'},
+    {id:'p-t2',text:'1479 Tratado de Alcaçovas (Portugal reconoce a Isabel)', cat:'Territorial', hint:'Fin de la guerra de Sucesión; reparto del Atlántico y paz con Portugal.'},
+    {id:'p-t3',text:'Canarias (s. XV, Béthencourt; poca resistencia guanche)', cat:'Territorial', hint:'Conquista y colonización atlántica; plataforma para rutas oceánicas.'},
+    {id:'p-t4',text:'Maestrazgos → Realengo', cat:'Territorial', hint:'Incorporación de las Órdenes Militares al patrimonio de la Corona.'},
+
+    {id:'p-r1',text:'1482 Inquisición (control social)', cat:'Religiosa', hint:'Tribunal para vigilar la ortodoxia con fuerte tutela de la Corona.'},
+    {id:'p-r2',text:'1492 Expulsión de judíos', cat:'Religiosa', hint:'Conversión o exilio: Edicto de Granada.'},
+    {id:'p-r3',text:'1500 Expulsión/Conversión de musulmanes', cat:'Religiosa', hint:'Conversión forzada y vigilancia posterior de los moriscos.'},
+    {id:'p-r4',text:'Patronato regio', cat:'Religiosa', hint:'Privilegios para presentar candidatos y gestionar beneficios eclesiásticos.'},
+    {id:'p-r5',text:'Reforma de la Iglesia (conventos, formación del clero)', cat:'Religiosa', hint:'Fortalecer disciplina y formación del clero.'},
+    {id:'p-r6',text:'Regalismo', cat:'Religiosa', hint:'Preeminencia del poder real frente al papado en materias eclesiásticas.'},
+
+    {id:'p-l1',text:'1ª gramática del castellano (1492): Nebrija', cat:'Lingüística', hint:'Primera gramática impresa de una lengua romance; fija reglas del castellano.'},
+
+    {id:'p-p1',text:'Autoridad real sobre la nobleza', cat:'Política', hint:'La Corona limita el poder de grandes linajes y centraliza decisiones.'},
+    {id:'p-p2',text:'Reformas institucionales', cat:'Política', hint:'Racionalización del gobierno y justicia bajo órganos permanentes.'},
+    {id:'p-p3',text:'La Santa Hermandad (orden en caminos)', cat:'Política', hint:'Milicia concejil financiada con impuestos locales; antecedente policial organizado.'},
+    {id:'p-p4',text:'Consejo Real (clérigos y juristas)', cat:'Política', hint:'Órgano de gobierno y consulta de mayor rango en Castilla.'},
+    {id:'p-p5',text:'Chancillerías (tribunales profesionales)', cat:'Política', hint:'Máximas instancias judiciales territoriales (Valladolid y Granada).'},
+    {id:'p-p6',text:'Ejército permanente (nobles)', cat:'Política', hint:'Paso hacia fuerzas regulares bajo mando real.'},
+    {id:'p-p7',text:'Hacienda Real (recauda impuestos)', cat:'Política', hint:'Ingresos estables: menor dependencia de Cortes.'},
+    {id:'p-p8',text:'Cortes pierden peso (menos subsidios)', cat:'Política', hint:'Con una Hacienda fortalecida, el rey convoca menos para pedir servicios.'},
+    {id:'p-p9',text:'Fernando asume Órdenes Militares', cat:'Política', hint:'Controla Santiago, Alcántara y Calatrava para reforzar poder y recursos.'}
+  ];
+
+  const LS_KEY='rrcc-puzzle-visual-v5';
+  const state={mode:'basic', started:false, startAt:0, best: JSON.parse(localStorage.getItem(LS_KEY)||'{}')};
+  const $=(s,r=document)=>r.querySelector(s);
+  const $$=(s,r=document)=>[...r.querySelectorAll(s)];
+  const pad=n=>String(n).padStart(2,'0');
+  const fmt=s=>`${pad(Math.floor(s/60))}:${pad(Math.floor(s%60))}`;
+  const shuffle=a=>a.sort(()=>Math.random()-.5);
+  let tick=null;
+  function startTimer(){ if(state.started) return; state.started=true; state.startAt=Date.now(); tick=setInterval(()=>{$('#timer').textContent=fmt(Math.floor((Date.now()-state.startAt)/1000))},250); }
+  function stopTimer(){ if(!state.started) return 0; clearInterval(tick); const secs=Math.floor((Date.now()-state.startAt)/1000); state.started=false; return secs; }
+  function updateBest(){ const k=state.mode==='basic'?'basicBest':'proBest'; const b=state.best[k]; $('#best').textContent=b?`Mejor (${state.mode}): ${fmt(b)}`:''; }
+  function flash(n,k){ n.classList.add(k); setTimeout(()=>n.classList.remove(k),500); }
+
+  const deckSection = $('#deckSection');
+  const deck = $('#deck');
+  const leftCount = $('#leftCount');
+  const basicBoard = $('#basicBoard');
+  const basicCols = $('#basicCols');
+  const proBoard = $('#proBoard');
+  const proCols = $('#proCols');
+
+  function makeCard(obj,{forceColor=null}={}){
+    const card=document.createElement('div');
+    card.className='card rounded-xl border shadow-sm p-3 text-[16px] bg-white';
+    card.setAttribute('draggable','true');
+    card.dataset.id=obj.id; card.dataset.cat=obj.cat; card.dataset.hint=obj.hint||'';
+    card.innerHTML=`<div class="flex items-center justify-between gap-2">
+      <span class="leading-5">${obj.text}</span>
+      <span class="text-[12px] px-2 py-[2px] rounded-full bg-black/5">ítem</span>
+    </div>`;
+    if(forceColor){
+      card.style.background=forceColor.bg;
+      card.style.color=forceColor.fg||'white';
+      card.style.borderColor='transparent';
+    }
+    card.addEventListener('dragstart', ev=>{
+      ev.dataTransfer.setData('text/plain', JSON.stringify({id:obj.id,cat:obj.cat}));
+      ev.dataTransfer.effectAllowed='move';
+      card.dataset.origin = card.parentElement.id || card.parentElement.dataset.slotId || 'deck';
+      startTimer();
+    });
+    card.addEventListener('click', ()=>{
+      if(!hintMode) return;
+      showHint(card, card.dataset.hint || 'Sin pista.');
+      hintMode=false; $('#hintBtn').classList.remove('ring-4','ring-amber-300/70');
+    });
+    return card;
+  }
+
+  function bindZone(zone, validator, options={}){
+    zone.addEventListener('dragover', ev=>{ev.preventDefault(); zone.classList.add('drag-over'); ev.dataTransfer.dropEffect='move';});
+    zone.addEventListener('dragleave', ()=>zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', ev=>{
+      ev.preventDefault(); zone.classList.remove('drag-over');
+      const data=JSON.parse(ev.dataTransfer.getData('text/plain')||'{}');
+      const card=document.querySelector(`[data-id="${data.id}"]`);
+      if(!card) return;
+      if(!validator(data)){ returnToOrigin(card); return; }
+      if(options.isDeck){ deck.appendChild(card); paint(card,null); updateLeft(); return; }
+      if(options.autoIntoSlot){
+        const free=$$('.slot', zone).find(s=>!s.querySelector('.card'));
+        if(free){ placeInSlot(card, free); } else { returnToOrigin(card); }
+      }else{ zone.appendChild(card); paint(card,data.cat); }
+      updateLeft(); checkWin();
+    });
+  }
+
+  function bindSlot(slot, validator){
+    slot.addEventListener('dragover', ev=>{ev.preventDefault(); slot.classList.add('drag-over'); ev.dataTransfer.dropEffect='move';});
+    slot.addEventListener('dragleave', ()=>slot.classList.remove('drag-over'));
+    slot.addEventListener('drop', ev=>{
+      ev.preventDefault(); slot.classList.remove('drag-over');
+      const data=JSON.parse(ev.dataTransfer.getData('text/plain')||'{}');
+      const card=document.querySelector(`[data-id="${data.id}"]`);
+      if(!card) return;
+      if(!validator(data) || slot.querySelector('.card')){ returnToOrigin(card); return; }
+      placeInSlot(card, slot); updateLeft(); checkWin();
+    });
+  }
+
+  function placeInSlot(card, slot){ slot.appendChild(card); slot.classList.add('filled'); paint(card, card.dataset.cat); }
+  function returnToOrigin(card){
+    const origin=card.dataset.origin;
+    if(origin && origin.startsWith('slot-')){
+      const el=document.querySelector(`[data-slot-id="${origin}"]`);
+      if(el) el.appendChild(card); else deck.appendChild(card);
+    }else if(origin && origin!=='deck'){
+      const container=document.getElementById(origin);
+      if(container) container.appendChild(card); else deck.appendChild(card);
+    }else{ deck.appendChild(card); }
+    paint(card,null); flash(card,'bg-red-100');
+  }
+  function paint(card, cat){
+    if(!cat){ card.style.background='white'; card.style.color='#0f172a'; card.style.borderColor='#CBD5E1'; return; }
+    const light=LIGHTS[cat]||'white'; card.style.background=light; card.style.color='#0f172a'; card.style.borderColor='transparent'; flash(card,'bg-green-100');
+  }
+  function updateLeft(){ leftCount.textContent = deck.children.length ? `${deck.children.length} por colocar` : '¡Todas colocadas!'; }
+  function groupBy(arr,f){return arr.reduce((m,x)=>{const k=f(x); (m[k]=m[k]||[]).push(x); return m;},{});}
+
+  function clearAll(){
+    deck.innerHTML=''; leftCount.textContent='';
+    proCols.innerHTML=''; basicCols.innerHTML='';
+    $('#timer').textContent='00:00'; stopTimer(); updateBest();
+  }
+
+  function renderBasic(){
+    clearAll();
+    basicBoard.classList.remove('hidden'); proBoard.classList.add('hidden');
+
+    const groups = groupBy(BASIC_COLORED, x=>x.cat);
+    const order = ['Dinástica','Territorial','Política','Religiosa','Lingüística'];
+    order.forEach(cat=>{
+      const col=document.createElement('div');
+      col.className='flex flex-col';
+      col.innerHTML=`
+        <div class="rounded-xl px-3 py-2 text-sm font-semibold text-white" style="background:${COLORS[cat]}">${cat.toUpperCase()}</div>
+        <div class="dropzone rounded-xl p-3 bg-slate-50 border mt-2" data-accept="${cat}">
+          <div class="grid gap-2" style="grid-template-columns:1fr;"></div>
+        </div>`;
+      basicCols.appendChild(col);
+      const grid=$('.grid', col);
+      const n=(groups[cat]||[]).length;
+      for(let i=0;i<n;i++){
+        const slot=document.createElement('div');
+        slot.className='slot';
+        slot.dataset.accept=cat; slot.dataset.slotId=`slotB-${cat}-${i}`;
+        slot.style.background = LIGHTS[cat];
+        slot.style.borderColor = COLORS[cat];
+        grid.appendChild(slot);
+        bindSlot(slot, payload=>payload.cat===cat);
+      }
+      bindZone($('.dropzone', col), payload=>payload.cat===cat, {autoIntoSlot:true});
+    });
+
+    shuffle([...BASIC_COLORED]).forEach(o=>{
+      deck.appendChild(makeCard(o,{forceColor:{bg:COLORS[o.cat], fg:'white'}}));
+    });
+    updateLeft();
+
+    bindZone(deck, ()=>true, {isDeck:true});
+    deckSection.classList.add('deck-dock');
+    deckSection.classList.remove('deck-sidebar');
+  }
+
+  function renderPro(){
+    clearAll();
+    basicBoard.classList.add('hidden'); proBoard.classList.remove('hidden');
+
+    const groups=groupBy(PRO_ITEMS, x=>x.cat);
+    const order=['Dinástica','Territorial','Política','Religiosa','Lingüística'];
+    order.forEach(cat=>{
+      const col=document.createElement('div');
+      col.className='flex flex-col';
+      col.innerHTML=`
+        <div class="rounded-xl px-3 py-2 text-sm font-semibold text-white" style="background:${COLORS[cat]}">${cat.toUpperCase()}</div>
+        <div class="dropzone rounded-xl p-3 bg-slate-50 border mt-2" data-accept="${cat}">
+          <div class="grid gap-2" style="grid-template-columns:1fr;"></div>
+        </div>`;
+      proCols.appendChild(col);
+      const grid=$('.grid', col);
+      const n=(groups[cat]||[]).length;
+      for(let i=0;i<n;i++){
+        const slot=document.createElement('div');
+        slot.className='slot';
+        slot.dataset.accept=cat; slot.dataset.slotId=`slot-${cat}-${i}`;
+        slot.style.background = LIGHTS[cat];
+        slot.style.borderColor = COLORS[cat];
+        grid.appendChild(slot);
+        bindSlot(slot, payload=>payload.cat===cat);
+      }
+      bindZone($('.dropzone', col), payload=>payload.cat===cat, {autoIntoSlot:true});
+    });
+
+    shuffle([...PRO_ITEMS]).forEach(o=>deck.appendChild(makeCard(o)));
+    updateLeft();
+
+    bindZone(deck, ()=>true, {isDeck:true});
+    deckSection.classList.remove('deck-dock');
+    deckSection.classList.add('deck-sidebar');
+  }
+
+  function checkWin(){
+    if(state.mode==='basic'){
+      const slots = document.querySelectorAll('#basicBoard .slot');
+      if(slots.length && [...slots].every(s=>s.querySelector('.card'))){ onWin(); }
+    }else{
+      const slots=document.querySelectorAll('#proBoard .slot');
+      if(slots.length && [...slots].every(s=>s.querySelector('.card'))){ onWin(); }
+    }
+  }
+  function onWin(){
+    const secs=stopTimer();
+    const key=state.mode==='basic'?'basicBest':'proBest';
+    if(!state.best[key] || secs<state.best[key]){ state.best[key]=secs; localStorage.setItem(LS_KEY, JSON.stringify(state.best)); }
+    updateBest();
+    document.getElementById('resultTxt').innerHTML=`Tiempo: <b>${fmt(secs)}</b><br>Mejor (${state.mode}): <b>${fmt(state.best[key])}</b>`;
+    document.getElementById('winDlg').showModal();
+  }
+  let hintMode=false;
+  function showHint(target, text){
+    document.querySelectorAll('.hint-bubble').forEach(n=>n.remove());
+    const b=document.createElement('div'); b.className='hint-bubble'; b.textContent=text;
+    document.body.appendChild(b);
+    const r=target.getBoundingClientRect();
+    const top=window.scrollY + r.top - b.offsetHeight - 8;
+    const left=window.scrollX + r.left + r.width/2 - Math.min(b.offsetWidth,280)/2;
+    b.style.top=`${Math.max(8,top)}px`; b.style.left=`${Math.max(8,left)}px`;
+    requestAnimationFrame(()=>{ b.style.opacity='1'; b.style.transform='translateY(0)'; });
+    setTimeout(()=>b.remove(),5000);
+  }
+
+  document.getElementById('basicBtn').addEventListener('click', ()=>{state.mode='basic'; renderBasic();});
+  document.getElementById('proBtn').addEventListener('click', ()=>{state.mode='pro'; renderPro();});
+  document.getElementById('resetBtn').addEventListener('click', ()=>{state.started=false; (state.mode==='basic'?renderBasic:renderPro)();});
+  document.getElementById('hintBtn').addEventListener('click', ()=>{ hintMode=!hintMode; document.getElementById('hintBtn').classList.toggle('ring-4'); document.getElementById('hintBtn').classList.toggle('ring-amber-300/70'); });
+  document.getElementById('againBtn').addEventListener('click', ()=>{ document.getElementById('winDlg').close(); state.started=false; (state.mode==='basic'?renderBasic:renderPro)();});
+  document.getElementById('closeBtn').addEventListener('click', ()=>document.getElementById('winDlg').close());
+
+  (function(){ const deck=document.getElementById('deck'); deck.addEventListener('dragover', e=>{e.preventDefault(); e.dataTransfer.dropEffect='move';}); deck.addEventListener('drop', e=>{e.preventDefault();}); })();
+
+  (function init(){ state.mode='basic'; updateBest(); renderBasic(); })();
+  </script>
+</body>
+</html>
